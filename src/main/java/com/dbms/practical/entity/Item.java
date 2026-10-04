@@ -23,6 +23,10 @@ public class Item {
     private String category;
     private String description;
 
+    private String imageUrl1;
+    private String imageUrl2;
+    private String imageUrl3;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable=false)
     private Status status;
