@@ -1,1 +1,0 @@
-# DBMS-practical-1
