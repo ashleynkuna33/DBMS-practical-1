@@ -2,12 +2,15 @@ import mysql.connector
 from mysql.connector import Error
 
 
+STUDENT_NUMBER = "4429119"
+
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "your_password",
+    "host": "172.21.12.21",
+    "port": int(f"2{STUDENT_NUMBER[-4:]}"),
+    "user": f"student_{STUDENT_NUMBER}",
+    "password": f"!St{STUDENT_NUMBER}",
     "database": "lost_and_found_db",
-    "port": 3306
+    "ssl_mode": "REQUIRED",
 }
 
 def get_connection():
