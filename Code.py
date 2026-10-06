@@ -1,5 +1,5 @@
 from DB import get_connection
-import seed
+import Seed as seed
 import Queries
 
 
@@ -11,13 +11,13 @@ def run_seeding(cursor):
 
     # Disable foreign keys to clear existing tables safely
     cursor.execute(seed.DISABLE_FOREIGN_KEYS)
-    
+
     tables_to_truncate = [
         ("CLAIMS", seed.TRUNCATE_CLAIMS),
         ("ITEMS", seed.TRUNCATE_ITEMS),
         ("LOCATIONS", seed.TRUNCATE_LOCATIONS),
         ("ADMINISTRATORS", seed.TRUNCATE_ADMINISTRATORS),
-        ("USERS", seed.TRUNCATE_USERS)
+        ("USERS", seed.TRUNCATE_USERS),
     ]
 
     for table_name, truncate_stmt in tables_to_truncate:
@@ -33,7 +33,7 @@ def run_seeding(cursor):
         ("ADMINISTRATORS", seed.SEED_ADMINISTRATORS),
         ("LOCATIONS", seed.SEED_LOCATIONS),
         ("ITEMS", seed.SEED_ITEMS),
-        ("CLAIMS", seed.SEED_CLAIMS)
+        ("CLAIMS", seed.SEED_CLAIMS),
     ]
 
     for table_name, insert_stmt in seed_statements:
@@ -52,12 +52,30 @@ def run_queries(cursor):
     queries_list = [
         ("Query 1: Active Items Search (Medium)", Queries.QUERY_1_ACTIVE_ITEMS),
         ("Query 2: Location Summary (Medium)", Queries.QUERY_2_LOCATION_SUMMARY),
-        ("Query 3: Users with Pending Claims (Medium)", Queries.QUERY_3_USERS_WITH_PENDING_CLAIMS),
-        ("Query 4: Recent Valuables Filter (Medium)", Queries.QUERY_4_RECENT_VALUABLES),
-        ("Query 5: Full Claim Audit Log (Complex)", Queries.QUERY_5_FULL_CLAIM_AUDIT),
-        ("Query 6: Contested Locations (Complex)", Queries.QUERY_6_CONTESTED_LOCATIONS),
-        ("Query 7: Admin Performance Analysis (Complex)", Queries.QUERY_7_ADMIN_PERFORMANCE),
-        ("Query 8: High Activity Users (Complex)", Queries.QUERY_8_HIGH_ACTIVITY_USERS)
+        (
+            "Query 3: Users with Pending Claims (Medium)",
+            Queries.QUERY_3_USERS_WITH_PENDING_CLAIMS,
+        ),
+        (
+            "Query 4: Recent Valuables Filter (Medium)",
+            Queries.QUERY_4_RECENT_VALUABLES,
+        ),
+        (
+            "Query 5: Full Claim Audit Log (Complex)",
+            Queries.QUERY_5_FULL_CLAIM_AUDIT,
+        ),
+        (
+            "Query 6: Contested Locations (Complex)",
+            Queries.QUERY_6_CONTESTED_LOCATIONS,
+        ),
+        (
+            "Query 7: Admin Performance Analysis (Complex)",
+            Queries.QUERY_7_ADMIN_PERFORMANCE,
+        ),
+        (
+            "Query 8: High Activity Users (Complex)",
+            Queries.QUERY_8_HIGH_ACTIVITY_USERS,
+        ),
     ]
 
     for title, query_sql in queries_list:
@@ -80,21 +98,20 @@ def main():
         return
 
     try:
-        cursor = conn.cursor(dictionary=True)
+        # PyMySQL connection provides dictionary cursors directly via context manager
+        # (cursorclass is already configured inside DB_CONFIG in DB.py)
+        with conn.cursor() as cursor:
+            run_seeding(cursor) # run once
+            conn.commit()
 
-        run_seeding(cursor)
-        conn.commit()
-
-        run_queries(cursor)
-
-        cursor.close()
+            run_queries(cursor)
 
     except Exception as e:
         print(f" An error occurred during database operations: {e}")
         conn.rollback()
 
     finally:
-        if conn and conn.is_connected():
+        if conn:
             conn.close()
             print("\nDatabase connection closed cleanly.")
 
