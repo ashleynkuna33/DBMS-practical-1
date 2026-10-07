@@ -157,7 +157,7 @@ GROUP BY u.user_id, u.student_number, full_name
 HAVING (COUNT(DISTINCT i.item_id) + COUNT(DISTINCT c.claim_id)) > (
     SELECT AVG(activity_count)
     FROM (
-        SELECT (COUNT(DISTINCT item_id) + COUNT(DISTINCT claim_id)) AS activity_count
+        SELECT (COUNT(DISTINCT items.item_id) + COUNT(DISTINCT claims.claim_id)) AS activity_count
         FROM users
         LEFT JOIN items ON users.user_id = items.reporter_user_id
         LEFT JOIN claims ON users.user_id = claims.claimant_user_id
