@@ -1,10 +1,13 @@
+# team name: code warriors
+# student numbers: 4363144, 4429119, 4346572, 4426381, 4323138, 4323584
+# filename: DB.py
+
 import os
 from pathlib import Path
 
 import pymysql
 from dotenv import load_dotenv
 
-# load .env to memory
 load_dotenv(dotenv_path=Path(__file__).resolve().with_name(".env"))
 
 

@@ -2,121 +2,112 @@
 # student numbers: 4363144, 4429119, 4346572, 4426381, 4323138, 4323584
 # filename: Code.py
 
+import argparse
+from pathlib import Path
 
 from DB import get_connection
-import Seed as seed
 import Queries
+import Seed
 
 
-def run_seeding(cursor):
-    """Disables foreign key constraints, resets tables, and populates initial sample data."""
-    print("\n" + "=" * 60)
-    print("1. SEEDING DATABASE DATA")
-    print("=" * 60)
+QUERIES = (
+    ("Query 1: Active Items Search (Medium)", Queries.QUERY_1_ACTIVE_ITEMS),
+    ("Query 2: Location Summary (Medium)", Queries.QUERY_2_LOCATION_SUMMARY),
+    ("Query 3: Users with Pending Claims (Medium)", Queries.QUERY_3_USERS_WITH_PENDING_CLAIMS),
+    ("Query 4: Recent Valuables Filter (Medium)", Queries.QUERY_4_RECENT_VALUABLES),
+    ("Query 5: Full Claim Audit Log (Complex)", Queries.QUERY_5_FULL_CLAIM_AUDIT),
+    ("Query 6: Contested Locations (Complex)", Queries.QUERY_6_CONTESTED_LOCATIONS),
+    ("Query 7: Admin Performance Analysis (Complex)", Queries.QUERY_7_ADMIN_PERFORMANCE),
+    ("Query 8: High Activity Users (Complex)", Queries.QUERY_8_HIGH_ACTIVITY_USERS),
+)
 
-    # Disable foreign keys to clear existing tables safely
-    cursor.execute(seed.DISABLE_FOREIGN_KEYS)
 
-    tables_to_truncate = [
-        ("CLAIMS", seed.TRUNCATE_CLAIMS),
-        ("ITEMS", seed.TRUNCATE_ITEMS),
-        ("LOCATIONS", seed.TRUNCATE_LOCATIONS),
-        ("ADMINISTRATORS", seed.TRUNCATE_ADMINISTRATORS),
-        ("USERS", seed.TRUNCATE_USERS),
-    ]
+def initialize_schema(connection):
+    schema_path = Path(__file__).resolve().with_name("schema.sql")
+    statements = [statement.strip() for statement in schema_path.read_text(encoding="utf-8").split(";") if statement.strip()]
 
-    for table_name, truncate_stmt in tables_to_truncate:
-        cursor.execute(truncate_stmt)
-        print(f"Cleared table: {table_name}")
+    with connection.cursor() as cursor:
+        for statement in statements:
+            cursor.execute(statement)
 
-    # Re-enable foreign key checks
-    cursor.execute(seed.ENABLE_FOREIGN_KEYS)
+    connection.commit()
+    print("Database tables are ready.")
 
-    # Insert initial seed records in order of dependency
-    seed_statements = [
-        ("USERS", seed.SEED_USERS),
-        ("ADMINISTRATORS", seed.SEED_ADMINISTRATORS),
-        ("LOCATIONS", seed.SEED_LOCATIONS),
-        ("ITEMS", seed.SEED_ITEMS),
-        ("CLAIMS", seed.SEED_CLAIMS),
-    ]
 
-    for table_name, insert_stmt in seed_statements:
-        cursor.execute(insert_stmt)
-        print(f"Populated table: {table_name}")
+def run_seeding(connection):
+    with connection.cursor() as cursor:
+        for table_name, statement in Seed.RESET_STATEMENTS:
+            cursor.execute(statement)
+            print(f"Cleared {table_name}.")
 
-    print("Database successfully seeded.")
+        for table_name, statement in Seed.SEED_STATEMENTS:
+            cursor.execute(statement)
+            print(f"Seeded {table_name}.")
 
-def run_queries(cursor):
-    """Executes and formats all 8 retrieval queries from Queries.py."""
-    print("\n" + "=" * 60)
-    print("2. EXECUTING RETRIEVAL QUERIES")
-    print("=" * 60)
+    connection.commit()
+    print("Sample data inserted successfully.")
 
-    queries_list = [
-        ("Query 1: Active Items Search (Medium)", Queries.QUERY_1_ACTIVE_ITEMS),
-        ("Query 2: Location Summary (Medium)", Queries.QUERY_2_LOCATION_SUMMARY),
-        (
-            "Query 3: Users with Pending Claims (Medium)",
-            Queries.QUERY_3_USERS_WITH_PENDING_CLAIMS,
-        ),
-        (
-            "Query 4: Recent Valuables Filter (Medium)",
-            Queries.QUERY_4_RECENT_VALUABLES,
-        ),
-        (
-            "Query 5: Full Claim Audit Log (Complex)",
-            Queries.QUERY_5_FULL_CLAIM_AUDIT,
-        ),
-        (
-            "Query 6: Contested Locations (Complex)",
-            Queries.QUERY_6_CONTESTED_LOCATIONS,
-        ),
-        (
-            "Query 7: Admin Performance Analysis (Complex)",
-            Queries.QUERY_7_ADMIN_PERFORMANCE,
-        ),
-        (
-            "Query 8: High Activity Users (Complex)",
-            Queries.QUERY_8_HIGH_ACTIVITY_USERS,
-        ),
-    ]
-
-    for title, query_sql in queries_list:
-        print(f"\n--- {title} ---")
-        cursor.execute(query_sql)
-        results = cursor.fetchall()
-
-        if not results:
-            print("No records found.")
-        else:
-            for row in results:
-                print(row)
-
-def main():
-    """Main execution flow."""
-    conn = get_connection()
-    if conn is None:
-        print("Failed to establish database connection. Exiting.")
+# clean data dispaly
+def display_rows(rows):
+    if not rows:
+        print("No records found.")
         return
 
+    columns = tuple(rows[0].keys())
+    formatted = [tuple("NULL" if row[column] is None else str(row[column]) for column in columns) for row in rows]
+    widths = [max(len(column), *(len(row[i]) for row in formatted)) for i, column in enumerate(columns)]
+
+    print(" | ".join(column.ljust(width) for column, width in zip(columns, widths)))
+    print("-+-".join("-" * width for width in widths))
+
+    for row in formatted:
+        print(" | ".join(value.ljust(width) for value, width in zip(row, widths)))
+
+    print(f"{len(rows)} row(s) returned.")
+
+
+def run_queries(connection):
+    with connection.cursor() as cursor:
+        for title, statement in QUERIES:
+            print(f"\n{title}")
+            cursor.execute(statement)
+            display_rows(cursor.fetchall())
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Run the lost-and-found database queries.")
+    parser.add_argument("--init-schema", action="store_true", help="Create missing database tables from schema.sql.")
+    parser.add_argument("--reset-seed", action="store_true", help="Replace existing records with demonstration data.")
+    args = parser.parse_args(argv)
+
+    connection = None
     try:
-        # PyMySQL connection provides dictionary cursors directly via context manager
-        # (cursorclass is already configured inside DB_CONFIG in DB.py)
-        with conn.cursor() as cursor:
-            run_seeding(cursor) # run once
-            conn.commit()
+        connection = get_connection()
+        print("Database connected successfully.")
 
-            run_queries(cursor)
+        if args.init_schema:
+            initialize_schema(connection)
 
-    except Exception as e:
-        print(f" An error occurred during database operations: {e}")
-        conn.rollback()
+        if args.reset_seed:
+            run_seeding(connection)
+
+        run_queries(connection)
+        return 0
+
+    except Exception as error:
+        if connection is not None:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        print(f"Database operation failed: {error}")
+        return 1
 
     finally:
-        if conn:
-            conn.close()
-            print("\nDatabase connection closed cleanly.")
+        if connection is not None:
+            connection.close()
+            print("Database connection closed.")
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
