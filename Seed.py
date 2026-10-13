@@ -1,3 +1,9 @@
+# team name: code warriors
+# student numbers: 4363144, 4429119, 4346572, 4426381, 4323138, 4323584
+# filename: Seed.py
+
+
+
 # Disable FK checks to reset/clean tables before seeding
 DISABLE_FOREIGN_KEYS = "SET FOREIGN_KEY_CHECKS = 0;"
 ENABLE_FOREIGN_KEYS = "SET FOREIGN_KEY_CHECKS = 1;"

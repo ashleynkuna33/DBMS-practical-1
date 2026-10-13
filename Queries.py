@@ -1,3 +1,8 @@
+# team name: code warriors
+# student numbers: 4363144, 4429119, 4346572, 4426381, 4323138, 4323584
+# filename: Queries.py
+
+
 SEED_USERS = """
 INSERT INTO users (student_number, password_hash, first_name, last_name, email)
 VALUES 

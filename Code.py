@@ -1,3 +1,8 @@
+# team name: code warriors
+# student numbers: 4363144, 4429119, 4346572, 4426381, 4323138, 4323584
+# filename: Code.py
+
+
 from DB import get_connection
 import Seed as seed
 import Queries
@@ -41,7 +46,6 @@ def run_seeding(cursor):
         print(f"Populated table: {table_name}")
 
     print("Database successfully seeded.")
-
 
 def run_queries(cursor):
     """Executes and formats all 8 retrieval queries from Queries.py."""
@@ -89,7 +93,6 @@ def run_queries(cursor):
             for row in results:
                 print(row)
 
-
 def main():
     """Main execution flow."""
     conn = get_connection()
@@ -114,7 +117,6 @@ def main():
         if conn:
             conn.close()
             print("\nDatabase connection closed cleanly.")
-
 
 if __name__ == "__main__":
     main()
