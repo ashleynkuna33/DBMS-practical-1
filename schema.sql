@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS lost_and_found_db
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE lost_and_found_db;
+
 CREATE TABLE IF NOT EXISTS users (
     user_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     student_number VARCHAR(20) NOT NULL,

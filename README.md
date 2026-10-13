@@ -1,13 +1,10 @@
 # CSC312 Practical Assignment 2 — Lost and Found Database
-
 A MySQL-backed Python demonstration of a university lost-and-found system, including reporting lost and found items, ownership claims, review by administrators, and eight medium/complex retrieval queries.
 
 ## Requirements
-
 Python 3.9 or newer, MySQL 8.0 or newer, and an existing MySQL database that your account can access.
 
 ## Setup
-
 1. Install dependencies using `python -m pip install -r requirements.txt`.
 2. Copy `.env.example` to `.env` and fill in your own database host, port, username, password, and database name. The `.env` file is excluded from Git.
 3. Create the MySQL database if it does not already exist. University-provided databases may already exist.
@@ -19,7 +16,6 @@ Python 3.9 or newer, MySQL 8.0 or newer, and an existing MySQL database that you
 `--init-schema` creates missing tables. It does not alter existing tables, so start with an empty database or verify that your existing table structures match `schema.sql`.
 
 ## Files
-
 - `Code.py`: command-line entry point, schema initialization, optional data reset, and query output.
 - `DB.py`: MySQL connection using environment variables.
 - `Queries.py`: eight retrieval queries.
@@ -29,7 +25,6 @@ Python 3.9 or newer, MySQL 8.0 or newer, and an existing MySQL database that you
 - `.env.example`: database configuration template.
 
 ## Query coverage
-
 1. Active lost-and-found items with their reporters and locations.
 2. Total, lost, found, and claimed items per location.
 3. Users with submitted or under-review claims.

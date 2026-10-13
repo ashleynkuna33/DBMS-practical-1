@@ -4,7 +4,7 @@ from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
 
-
+# load .env to memory
 load_dotenv(dotenv_path=Path(__file__).resolve().with_name(".env"))
 
 
