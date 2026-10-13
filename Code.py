@@ -9,7 +9,6 @@ from DB import get_connection
 import Queries
 import Seed
 
-
 QUERIES = (
     ("Query 1: Active Items Search (Medium)", Queries.QUERY_1_ACTIVE_ITEMS),
     ("Query 2: Location Summary (Medium)", Queries.QUERY_2_LOCATION_SUMMARY),
@@ -20,7 +19,6 @@ QUERIES = (
     ("Query 7: Admin Performance Analysis (Complex)", Queries.QUERY_7_ADMIN_PERFORMANCE),
     ("Query 8: High Activity Users (Complex)", Queries.QUERY_8_HIGH_ACTIVITY_USERS),
 )
-
 
 def initialize_schema(connection):
     schema_path = Path(__file__).resolve().with_name("schema.sql")
@@ -33,46 +31,40 @@ def initialize_schema(connection):
     connection.commit()
     print("Database tables are ready.")
 
-
 def run_seeding(connection):
+    print("\n" + "=" * 60)
+    print("1. SEEDING DATABASE DATA")
+    print("=" * 60)
+
     with connection.cursor() as cursor:
         for table_name, statement in Seed.RESET_STATEMENTS:
             cursor.execute(statement)
-            print(f"Cleared {table_name}.")
+            print(f"Cleared table: {table_name.upper()}")
 
         for table_name, statement in Seed.SEED_STATEMENTS:
             cursor.execute(statement)
-            print(f"Seeded {table_name}.")
+            print(f"Populated table: {table_name.upper()}")
 
     connection.commit()
-    print("Sample data inserted successfully.")
+    print("Database successfully seeded.")
 
-# clean data dispaly
 def display_rows(rows):
     if not rows:
         print("No records found.")
-        return
-
-    columns = tuple(rows[0].keys())
-    formatted = [tuple("NULL" if row[column] is None else str(row[column]) for column in columns) for row in rows]
-    widths = [max(len(column), *(len(row[i]) for row in formatted)) for i, column in enumerate(columns)]
-
-    print(" | ".join(column.ljust(width) for column, width in zip(columns, widths)))
-    print("-+-".join("-" * width for width in widths))
-
-    for row in formatted:
-        print(" | ".join(value.ljust(width) for value, width in zip(row, widths)))
-
-    print(f"{len(rows)} row(s) returned.")
-
+    else:
+        for row in rows:
+            print(row)
 
 def run_queries(connection):
+    print("\n" + "=" * 60)
+    print("2. EXECUTING RETRIEVAL QUERIES")
+    print("=" * 60)
+
     with connection.cursor() as cursor:
         for title, statement in QUERIES:
-            print(f"\n{title}")
+            print(f"\n--- {title} ---")
             cursor.execute(statement)
             display_rows(cursor.fetchall())
-
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Run the lost-and-found database queries.")
@@ -83,7 +75,7 @@ def main(argv=None):
     connection = None
     try:
         connection = get_connection()
-        print("Database connected successfully.")
+        print("DB connected successfully!")
 
         if args.init_schema:
             initialize_schema(connection)
@@ -106,8 +98,7 @@ def main(argv=None):
     finally:
         if connection is not None:
             connection.close()
-            print("Database connection closed.")
-
+            print("\nDatabase connection closed cleanly.")
 
 if __name__ == "__main__":
     raise SystemExit(main())

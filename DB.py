@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=Path(__file__).resolve().with_name(".env"))
 
-
 def get_connection():
     required = ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME")
     missing = [name for name in required if not os.getenv(name)]
